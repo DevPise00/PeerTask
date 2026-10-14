@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PeerTask — Verified Neighborhood Skill & Labor Exchange</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- 1. GATEKEEPER LOGIN: PHONE OTP + LIVE CAMERA SELFIE -->
+  <section id="auth-screen" class="auth-overlay">
+    <div class="auth-card">
+      <div class="brand-header">
+        <span class="logo-badge">PT</span>
+        <div>
+          <h1>PeerTask Verification</h1>
+          <p>Zero-Middleman Neighborhood Skill Exchange (0% Commission)</p>
+        </div>
+      </div>
+
+      <div class="auth-steps">
+        <!-- Step A: Profile & Phone -->
+        <div class="form-group">
+          <label for="auth-name">Full Name</label>
+          <input type="text" id="auth-name" placeholder="e.g., Devanshu Pise" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="auth-area">Neighborhood / Locality</label>
+            <input type="text" id="auth-area" placeholder="e.g., Dharampeth, Nagpur" required />
+          </div>
+          <div class="form-group">
+            <label for="auth-phone">Mobile Number (10 Digits)</label>
+            <div class="inline-input">
+              <input type="tel" id="auth-phone" placeholder="9876543210" maxlength="10" />
+              <button type="button" id="btn-send-otp" class="btn-secondary">Send OTP</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="otp-banner" class="otp-banner hidden"></div>
+
+        <!-- Step B: OTP Input -->
+        <div class="form-group">
+          <label for="auth-otp">Enter 6-Digit OTP</label>
+          <input type="text" id="auth-otp" placeholder="Enter OTP shown above" maxlength="6" />
+        </div>
+
+        <!-- Step C: Mandatory Live Webcam Anti-Fraud Photo -->
+        <div class="camera-box">
+          <label>Mandatory Anti-Fraud Live Selfie Capture</label>
+          <p class="hint">Gallery uploads are disabled. Please capture a live frame from your camera.</p>
+          <div class="video-wrap">
+            <video id="webcam-video" autoplay playsinline muted></video>
+            <img id="captured-preview" class="hidden" alt="Captured Live Selfie" />
+          </div>
+          <canvas id="webcam-canvas" width="320" height="240" class="hidden"></canvas>
+          <div class="camera-actions">
+            <button type="button" id="btn-start-cam" class="btn-outline">1. Start Camera</button>
+            <button type="button" id="btn-capture-photo" class="btn-secondary" disabled>2. Capture Live Photo</button>
+          </div>
+        </div>
+
+        <button type="button" id="btn-verify-login" class="btn-primary full-width">
+          Verify Identity &amp; Enter PeerTask
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. MAIN APPLICATION -->
+  <div id="app-shell" class="hidden">
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo-badge">PT</span>
+        <div>
+          <strong>PeerTask</strong>
+          <small>0% Commission Neighborhood Exchange</small>
+        </div>
+      </div>
+
+      <nav class="tabs" role="tablist">
+        <button class="tab active" data-tab="hire">Hire a Neighbor</button>
+        <button class="tab" data-tab="offer">Offer a Skill</button>
+        <button class="tab" data-tab="dashboard">Dashboard &amp; Trust Graph</button>
+        <button class="tab" data-tab="database">Live DB Inspector</button>
+      </nav>
+
+      <div class="user-chip" id="user-chip">
+        <img id="header-avatar" src="" alt="User" />
+        <div>
+          <span id="header-name">User</span>
+          <small id="header-area">Area</small>
+        </div>
+        <button id="btn-logout" class="btn-sm">Switch User</button>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- TAB 1: HIRE A NEIGHBOR -->
+      <section id="tab-hire" class="tab-panel">
+        <div class="toolbar">
+          <input type="search" id="search-q" placeholder="Search skills, keywords, or locality..." />
+          <select id="filter-mode">
+            <option value="All">All Modes (Barter + Direct Pay)</option>
+            <option value="Barter">Barter Only (Service Swap)</option>
+            <option value="Paid">Direct Pay Only (0% Fee)</option>
+          </select>
+          <select id="filter-category">
+            <option value="All">All Categories</option>
+            <option value="Home Repair">Home Repair</option>
+            <option value="Tutoring & Music">Tutoring &amp; Music</option>
+            <option value="Tech & Coding">Tech &amp; Coding</option>
+            <option value="Cooking & Errands">Cooking &amp; Errands</option>
+          </select>
+        </div>
+        <div id="skills-grid" class="grid"></div>
+      </section>
+
+      <!-- TAB 2: OFFER A SKILL -->
+      <section id="tab-offer" class="tab-panel hidden">
+        <div class="card form-card">
+          <h2>Publish a Neighborhood Skill Listing</h2>
+          <p class="hint">Your verified live photo and phone number will be attached to build neighbor trust.</p>
+          <form id="form-offer">
+            <div class="form-group">
+              <label for="skill-name">Skill / Service Title</label>
+              <input type="text" id="skill-name" placeholder="e.g., Acoustic Guitar Lessons or Fan Repair" required />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="skill-category">Category</label>
+                <select id="skill-category">
+                  <option value="Home Repair">Home Repair</option>
+                  <option value="Tutoring & Music">Tutoring &amp; Music</option>
+                  <option value="Tech & Coding">Tech &amp; Coding</option>
+                  <option value="Cooking & Errands">Cooking &amp; Errands</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="skill-location">Neighborhood</label>
+                <input type="text" id="skill-location" required />
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="skill-mode">Exchange Mode</label>
+                <select id="skill-mode">
+                  <option value="Both">Both (Barter or Direct Pay)</option>
+                  <option value="Barter">Barter (Service-for-Service Swap)</option>
+                  <option value="Paid">Direct Pay (Offline/UPI 0% Commission)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="skill-price">Direct Pay Rate (₹ INR, if applicable)</label>
+                <input type="number" id="skill-price" value="250" min="0" />
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="skill-details">Service Details &amp; What You Need in Barter</label>
+              <textarea id="skill-details" rows="3" placeholder="Describe what you offer and availability..." required></textarea>
+            </div>
+            <button type="submit" class="btn-primary">Publish Live Skill Ad</button>
+          </form>
+        </div>
+      </section>
+
+      <!-- TAB 3: DASHBOARD & TRUST GRAPH -->
+      <section id="tab-dashboard" class="tab-panel hidden">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span>Trust Score</span>
+            <strong id="stat-score">0</strong>
+            <span id="stat-badge" class="badge">New</span>
+          </div>
+          <div class="stat-card">
+            <span>Bilaterally Completed</span>
+            <strong id="stat-completed">0</strong>
+            <small>Both sides confirmed</small>
+          </div>
+          <div class="stat-card">
+            <span>Average Star Rating</span>
+            <strong id="stat-rating">0.0 ★</strong>
+            <small>Across your listings</small>
+          </div>
+          <div class="stat-card">
+            <span>Active Skills Offered</span>
+            <strong id="stat-skills">0</strong>
+            <small>Live on marketplace</small>
+          </div>
+        </div>
+
+        <!-- DYNAMIC SVG TRUST GRAPH -->
+        <div class="card chart-card">
+          <div class="chart-header">
+            <div>
+              <h3>Live Trust Score Movement Graph</h3>
+              <p class="hint">Formula: Volume = 100 × (1 − e^(−0.3n)) × Quality (avgRating / 5). Updates on bilateral completion &amp; review.</p>
+            </div>
+          </div>
+          <svg id="trust-svg" viewBox="0 0 600 180" preserveAspectRatio="xMidYMid meet"></svg>
+        </div>
+
+        <div class="card">
+          <h3>Your Bookings &amp; Bilateral Verification Queue</h3>
+          <div id="bookings-list" class="bookings-list"></div>
+        </div>
+      </section>
+
+      <!-- TAB 4: LIVE DATABASE INSPECTOR (FOR EVALUATORS) -->
+      <section id="tab-database" class="tab-panel hidden">
+        <div class="card">
+          <div class="db-header">
+            <div>
+              <h3>Live Relational Database Inspector (`USERS` Table)</h3>
+              <p class="hint">Shows every logged-in neighbor, OTP verification status, and live anti-fraud selfie stored in the backend database. Raw SQL Console also available at <a href="/h2-console" target="_blank">/h2-console</a> (JDBC URL: <code>jdbc:h2:file:./data/peertaskdb</code>).</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="db-table">
+              <thead>
+                <tr>
+                  <th>Live Photo</th>
+                  <th>User ID</th>
+                  <th>Name</th>
+                  <th>Phone (OTP Verified)</th>
+                  <th>Locality</th>
+                  <th>Trust Trajectory</th>
+                  <th>Last Login</th>
+                </tr>
+              </thead>
+              <tbody id="db-users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODAL FOR HIRING / UPI QR / REVIEWS -->
+  <div id="modal-backdrop" class="modal-backdrop hidden">
+    <div class="modal-card" id="modal-content"></div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
